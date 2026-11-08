@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@phison/types': path.resolve(__dirname, '../../packages/types/src/index.ts'),
+      // Self-contained: types are vendored inside the web app.
+      // No monorepo parent dependency needed for Vercel deployment.
+      '@phison/types': path.resolve(__dirname, './src/types/index.ts'),
       '@': path.resolve(__dirname, './src'),
     },
   },
