@@ -1,0 +1,2 @@
+function e(e){let t=e/100;return new Intl.NumberFormat(`en-ET`,{style:`currency`,currency:`ETB`,minimumFractionDigits:2}).format(t)}function t(e){return new Intl.DateTimeFormat(`en-ET`,{dateStyle:`medium`}).format(new Date(e))}function n(e){return new Intl.DateTimeFormat(`en-ET`,{dateStyle:`medium`,timeStyle:`short`}).format(new Date(e))}export{n,e as r,t};
+//# sourceMappingURL=formatters-BL-N6yUy.js.map

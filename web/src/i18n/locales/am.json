@@ -1,0 +1,18 @@
+{
+  "app_name": "ፊሶን ንብረት",
+  "login": "ግባ",
+  "logout": "ውጣ",
+  "dashboard": "ዳሽቦርድ",
+  "users": "ተጠቃሚዎች",
+  "units": "ክፍሎች",
+  "payments": "ክፍያዎች",
+  "charges": "ክፍያ ጥያቄዎች",
+  "vouchers": "ደረሰኞች",
+  "notices": "ማስታወቂያዎች",
+  "requests": "ጥያቄዎች",
+  "settings": "ቅንብሮች",
+  "outstanding": "ያልተከፈለ ቀሪ",
+  "status": "ሁኔታ",
+  "amount": "መጠን",
+  "currency": "ብር"
+}

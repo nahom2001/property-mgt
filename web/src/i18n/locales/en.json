@@ -1,0 +1,18 @@
+{
+  "app_name": "Phison Property",
+  "login": "Sign In",
+  "logout": "Sign Out",
+  "dashboard": "Dashboard",
+  "users": "Users",
+  "units": "Units",
+  "payments": "Payments",
+  "charges": "Charges",
+  "vouchers": "Vouchers",
+  "notices": "Notices",
+  "requests": "Requests",
+  "settings": "Settings",
+  "outstanding": "Outstanding Balance",
+  "status": "Status",
+  "amount": "Amount",
+  "currency": "ETB"
+}
