@@ -1,18 +1,25 @@
-import { Table, Space, Typography, Select, Row, Col } from 'antd';
-import { useQuery } from '@tanstack/react-query';
+import { Table, Space, Typography, Select, Row, Col, Button, Modal, Form, InputNumber, Input, App as AntApp } from 'antd';
+import { DollarOutlined } from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api } from '../../lib/api';
+import { api, getErrorMessage } from '../../lib/api';
 import { formatETB, formatDate } from '../../lib/formatters';
 import { StatusTag } from '../../components/shared/StatusTag';
 import { StatCard } from '../../components/shared/StatCard';
 import { PaymentsSubNav } from '../../components/shared/SubNav';
 import { ChargeStatus } from '@phison/types';
 import type { Charge } from '@phison/types';
+import DatePicker from 'antd/es/date-picker/index';
+import dayjs from 'dayjs';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default function ChargesAdminPage() {
+  const { message } = AntApp.useApp();
+  const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
+  const [payModal, setPayModal] = useState<Charge | null>(null);
+  const [form] = Form.useForm();
 
   const { data: charges = [], isLoading } = useQuery({
     queryKey: ['charges', statusFilter],
@@ -20,9 +27,23 @@ export default function ChargesAdminPage() {
       api.get<Charge[]>(`/payments/charges${statusFilter ? `?status=${statusFilter}` : ''}`).then(r => r.data),
   });
 
+  const recordPaymentMutation = useMutation({
+    mutationFn: (v: Record<string, unknown>) => api.post('/payments/resident/manual', v),
+    onSuccess: () => {
+      message.success('Payment recorded');
+      qc.invalidateQueries({ queryKey: ['charges'] });
+      qc.invalidateQueries({ queryKey: ['pending-payments'] });
+      setPayModal(null);
+      form.resetFields();
+    },
+    onError: (e) => message.error(getErrorMessage(e)),
+  });
+
   const totalCharged = charges.reduce((s, c) => s + c.amount, 0);
   const totalCollected = charges.reduce((s, c) => s + c.paidAmount, 0);
   const totalOutstanding = totalCharged - totalCollected;
+
+  const payableStatuses = new Set(['issued', 'partially_paid', 'overdue']);
 
   const columns = [
     {
@@ -35,10 +56,7 @@ export default function ChargesAdminPage() {
       render: (r: string) => <StatusTag status={r} />,
     },
     { title: 'Amount (ETB)', dataIndex: 'amount', key: 'amount', render: (a: number) => formatETB(a) },
-    {
-      title: 'Paid (ETB)', dataIndex: 'paidAmount', key: 'paidAmount',
-      render: (a: number) => formatETB(a),
-    },
+    { title: 'Paid (ETB)', dataIndex: 'paidAmount', key: 'paidAmount', render: (a: number) => formatETB(a) },
     {
       title: 'Outstanding (ETB)', key: 'outstanding',
       render: (_: unknown, r: Charge) => formatETB(r.amount - r.paidAmount),
@@ -47,6 +65,26 @@ export default function ChargesAdminPage() {
     {
       title: 'Status', dataIndex: 'status', key: 'status',
       render: (s: string) => <StatusTag status={s} />,
+    },
+    {
+      title: 'Actions', key: 'actions',
+      render: (_: unknown, charge: Charge) =>
+        payableStatuses.has(charge.status) ? (
+          <Button
+            size="small"
+            type="primary"
+            icon={<DollarOutlined />}
+            onClick={() => {
+              setPayModal(charge);
+              form.setFieldsValue({
+                amount: (charge.amount - charge.paidAmount) / 100,
+                paidOn: dayjs(),
+              });
+            }}
+          >
+            Record Payment
+          </Button>
+        ) : null,
     },
   ];
 
@@ -71,6 +109,77 @@ export default function ChargesAdminPage() {
       </Row>
 
       <Table dataSource={charges} columns={columns} rowKey="id" loading={isLoading} />
+
+      {/* ── Record payment modal ─────────────────────────────────────── */}
+      <Modal
+        title="Record Payment"
+        open={!!payModal}
+        onCancel={() => { setPayModal(null); form.resetFields(); }}
+        onOk={() => form.submit()}
+        confirmLoading={recordPaymentMutation.isPending}
+        okText="Record Payment"
+      >
+        {payModal && (
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+              <Text type="secondary">Outstanding</Text>
+              <Text strong style={{ fontSize: 16 }}>
+                {formatETB(payModal.amount - payModal.paidAmount)}
+              </Text>
+            </Space>
+
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={v => recordPaymentMutation.mutate({
+                chargeId: payModal.id,
+                amount: Math.round((v.amount as number) * 100),
+                method: v.method,
+                paidOn: dayjs(v.paidOn).toISOString(),
+                reference: v.reference,
+              })}
+            >
+              <Form.Item
+                name="amount"
+                label="Amount (ETB)"
+                rules={[
+                  { required: true, message: 'Enter the amount' },
+                  {
+                    validator: (_, val) => {
+                      const outstanding = (payModal.amount - payModal.paidAmount) / 100;
+                      if (val > outstanding) return Promise.reject(`Cannot exceed outstanding balance of ETB ${outstanding.toFixed(2)}`);
+                      if (val <= 0) return Promise.reject('Must be greater than 0');
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <InputNumber
+                  min={0.01}
+                  precision={2}
+                  style={{ width: '100%' }}
+                  addonAfter="ETB"
+                />
+              </Form.Item>
+
+              <Form.Item name="method" label="Payment Method" rules={[{ required: true }]}>
+                <Select options={[
+                  { label: 'Cash', value: 'cash' },
+                  { label: 'Bank Transfer', value: 'bank_transfer' },
+                ]} />
+              </Form.Item>
+
+              <Form.Item name="paidOn" label="Payment Date" rules={[{ required: true }]}>
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
+
+              <Form.Item name="reference" label="Reference" rules={[{ required: true, message: 'Enter a reference' }]}>
+                <Input placeholder="e.g. CBE-TRF-12345 or Receipt #001" />
+              </Form.Item>
+            </Form>
+          </Space>
+        )}
+      </Modal>
     </Space>
   );
 }

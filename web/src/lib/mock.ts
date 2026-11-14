@@ -525,7 +525,16 @@ on('GET', /\/payments\/charges$/, () => ok(CHARGES));
 on('GET', /\/payments\/charges\/[\w-]+$/, (url) => ok(CHARGES.find(c => c.id === url.split('/').pop()) ?? CHARGES[0]));
 
 // Resident payments
-on('POST', /\/payments\/resident\/manual/, () => ok({ id: `rp-${Date.now()}`, status: 'confirmed' }));
+on('POST', /\/payments\/resident\/manual/, (_url, body) => {
+  const b = body as Record<string, unknown>;
+  const charge = CHARGES.find(c => c.id === b.chargeId);
+  if (charge) {
+    const paid = Number(b.amount);
+    charge.paidAmount = (charge.paidAmount as number) + paid;
+    charge.status = (charge.paidAmount >= (charge.amount as number) ? 'paid' : 'partially_paid') as typeof charge.status;
+  }
+  return ok({ id: `rp-${Date.now()}`, status: 'confirmed', ...b });
+});
 on('POST', /\/payments\/resident\/online\/[\w-]+$/, (_url, body) => {
   const b = body as Record<string, unknown>;
   const payment = {
