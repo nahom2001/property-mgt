@@ -1,5 +1,4 @@
-import { Table, Tag, Space, Typography, Button } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { Table, Tag, Space, Typography } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { formatETB, formatDate } from '../../lib/formatters';
@@ -26,12 +25,6 @@ export default function VouchersAdminPage() {
     {
       title: 'Status', dataIndex: 'status', key: 'status',
       render: (s: string) => <Tag color={s === 'issued' ? 'green' : 'default'}>{s}</Tag>,
-    },
-    {
-      title: 'Actions', key: 'actions',
-      render: () => (
-        <Button size="small" icon={<DownloadOutlined />} disabled>PDF</Button>
-      ),
     },
   ];
 
