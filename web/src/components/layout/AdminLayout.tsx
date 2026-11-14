@@ -17,19 +17,7 @@ const NAV_ITEMS = [
   { key: '/admin', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/admin/residents', icon: <TeamOutlined />, label: 'Residents' },
   { key: '/admin/units', icon: <HomeOutlined />, label: 'Units' },
-  {
-    key: 'payments',
-    icon: <DollarOutlined />,
-    label: 'Payments',
-    children: [
-      { key: '/admin/payments/provider',       label: 'Provider Payments' },
-      { key: '/admin/payments/meter-readings', label: 'Meter Readings' },
-      { key: '/admin/payments/charges',        label: 'Charges' },
-      { key: '/admin/payments/pending',        label: 'Pending Confirmations' },
-      { key: '/admin/payments/ledger',         label: 'Recovery Ledger' },
-      { key: '/admin/payments/pricing',        label: 'Payment Pricing' },
-    ],
-  },
+  { key: '/admin/payments', icon: <DollarOutlined />, label: 'Payments' },
   { key: '/admin/vouchers', icon: <FileTextOutlined />, label: 'Vouchers' },
   { key: '/admin/notices', icon: <NotificationOutlined />, label: 'Notices' },
   { key: '/admin/requests', icon: <CustomerServiceOutlined />, label: 'Requests' },
@@ -42,11 +30,13 @@ export function AdminLayout() {
   const { user, clearAuth } = useAuthStore();
   const { token } = antTheme.useToken();
 
-  // Determine which top-level key is active (for submenu parent highlighting)
-  const selectedKey = location.pathname;
-  const openKey = NAV_ITEMS.find(
-    item => 'children' in item && Array.isArray(item.children) && item.children.some(c => location.pathname.startsWith(c.key)),
-  )?.key;
+  // Highlight the top-level nav item that matches the current path
+  const selectedKey =
+    NAV_ITEMS.find(item =>
+      item.key === '/admin'
+        ? location.pathname === '/admin'
+        : location.pathname.startsWith(item.key)
+    )?.key ?? location.pathname;
 
   const userMenu = {
     items: [
@@ -103,12 +93,8 @@ export function AdminLayout() {
         <Menu
           mode="horizontal"
           selectedKeys={[selectedKey]}
-          defaultOpenKeys={openKey ? [openKey] : []}
           items={NAV_ITEMS}
-          onClick={({ key }) => {
-            // Only navigate for leaf keys (not submenu parents)
-            if (key.startsWith('/')) navigate(key);
-          }}
+          onClick={({ key }) => navigate(key)}
           style={{
             flex: 1,
             border: 'none',
