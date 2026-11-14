@@ -244,6 +244,42 @@ export interface UnitCost {
   updatedAt: string;
 }
 
+// ─── Tariff tables (Payment Pricing) ─────────────────────────────────────────
+
+export interface ElectricityTariffRate {
+  id: string;
+  periodId: string;
+  periodLabel: string;
+  category: 'residential' | 'commercial';
+  tier: number;
+  fromKwh: number;
+  toKwh: number | null;
+  ratePerKwh: number;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface WaterTariffRate {
+  id: string;
+  periodId: string;
+  periodLabel: string;
+  tier: number;
+  fromM3: number;
+  toM3: number | null;
+  ratePerM3: number;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export interface ServiceFeeRate {
+  id: string;
+  withVehicleAmount: number;
+  withoutVehicleAmount: number;
+  effectiveFrom: string;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
 export interface CreateNoticeRequest {
   title: string;
   body: string;

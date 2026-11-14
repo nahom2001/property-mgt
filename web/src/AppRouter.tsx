@@ -22,6 +22,7 @@ const LedgerPage           = lazy(() => import('./pages/admin/LedgerPage'));
 const VouchersAdminPage    = lazy(() => import('./pages/admin/VouchersAdminPage'));
 const NoticesAdminPage     = lazy(() => import('./pages/admin/NoticesAdminPage'));
 const RequestsAdminPage    = lazy(() => import('./pages/admin/RequestsAdminPage'));
+const PaymentPricingPage  = lazy(() => import('./pages/admin/PaymentPricingPage'));
 const SettingsPage         = lazy(() => import('./pages/admin/SettingsPage'));
 
 // ── Resident portal pages ─────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ export function AppRouter() {
             <Route path="payments/charges" element={<ChargesAdminPage />} />
             <Route path="payments/pending" element={<PendingPaymentsPage />} />
             <Route path="payments/ledger" element={<LedgerPage />} />
+            <Route path="payments/pricing" element={<PaymentPricingPage />} />
 
             {/* Other modules */}
             <Route path="vouchers" element={<VouchersAdminPage />} />

@@ -7,11 +7,11 @@ import { CheckOutlined, ArrowLeftOutlined, FileTextOutlined } from '@ant-design/
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, getErrorMessage } from '../../lib/api';
 import { formatETB, formatDate } from '../../lib/formatters';
-import type { ComputeAllocationResponse, User, Voucher } from '@phison/types';
+import type { ComputeAllocationResponse, User, Voucher, ProviderPayment } from '@phison/types';
 import { PaymentType, VoucherDirection } from '@phison/types';
 import { PaymentsSubNav } from '../../components/shared/SubNav';
 import DatePicker from 'antd/es/date-picker/index';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -44,6 +44,17 @@ export default function AllocationPage() {
     queryKey: ['allocation-preview', paymentId],
     queryFn: () =>
       api.post<ComputeAllocationResponse>(`/payments/allocations/compute/${paymentId}`).then(r => r.data),
+    enabled: !!paymentId,
+  });
+
+  // ── Provider payment details ──────────────────────────────────────────────
+
+  const { data: providerPayment } = useQuery({
+    queryKey: ['provider-payment', paymentId],
+    queryFn: () =>
+      api.get<ProviderPayment[]>('/payments/provider').then(r =>
+        r.data.find(p => p.id === paymentId) ?? null
+      ),
     enabled: !!paymentId,
   });
 
@@ -80,6 +91,30 @@ export default function AllocationPage() {
     onError: (e) => message.error(getErrorMessage(e)),
   });
 
+  // ── Auto-fill voucher form from provider payment + allocation ────────────
+
+  const watchResidentId = Form.useWatch('residentId', voucherForm);
+
+  useEffect(() => {
+    if (!providerPayment) return;
+
+    // Pre-fill payment type and date from the provider payment
+    voucherForm.setFieldsValue({
+      paymentType: providerPayment.type as unknown as PaymentType,
+      paymentDate: dayjs(providerPayment.paidOn),
+    });
+  }, [providerPayment, voucherForm]);
+
+  useEffect(() => {
+    if (!watchResidentId || !data) return;
+
+    // Find this resident's computed charge from the allocation lines
+    const line = data.lines.find(l => l.payerId === watchResidentId);
+    if (line) {
+      voucherForm.setFieldValue('amount', line.shareAmount / 100); // santim → ETB
+    }
+  }, [watchResidentId, data, voucherForm]);
+
   // ── Assign voucher mutation ───────────────────────────────────────────────
 
   const assignVoucherMutation = useMutation({
@@ -107,14 +142,19 @@ export default function AllocationPage() {
   const allocationColumns = [
     { title: 'Unit',  dataIndex: 'unitIdentifier', key: 'unit' },
     {
-      title: 'Payer', dataIndex: 'payerName', key: 'payer',
+      title: 'Resident', dataIndex: 'payerName', key: 'payer',
       render: (n: string | null) => n ?? <Text type="danger">Unlinked</Text>,
     },
     {
       title: 'Role', dataIndex: 'payerRole', key: 'role',
       render: (r: string | null) => r ? <Tag>{r}</Tag> : '—',
     },
-    { title: 'Share (ETB)', dataIndex: 'shareAmount', key: 'share', render: (a: number) => formatETB(a) },
+    {
+      title: 'Charge (ETB)', dataIndex: 'shareAmount', key: 'share',
+      render: (a: number) => (
+        <Text strong style={{ fontSize: 15 }}>{formatETB(a)}</Text>
+      ),
+    },
   ];
 
   // ── Issued vouchers columns ───────────────────────────────────────────────
@@ -156,9 +196,9 @@ export default function AllocationPage() {
         <>
           {!data.valid && (
             <Alert
-              type="error"
+              type="warning"
               showIcon
-              message={`Totals do not balance. Difference: ${formatETB(data.difference)}`}
+              message={`Rate-based total differs from provider payment by ${formatETB(data.difference)}. Charges will use the calculated amounts.`}
             />
           )}
           {data.unlinkedUnits.length > 0 && (
@@ -206,7 +246,7 @@ export default function AllocationPage() {
                 <Button
                   type="primary"
                   icon={<CheckOutlined />}
-                  disabled={!data.valid || !dueDate}
+                  disabled={!dueDate}
                   loading={confirmMutation.isPending}
                   onClick={() => confirmMutation.mutate()}
                 >

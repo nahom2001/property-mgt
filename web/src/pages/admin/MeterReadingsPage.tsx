@@ -53,11 +53,13 @@ export default function MeterReadingsPage() {
   });
 
   const columns = [
-    { title: 'Unit', dataIndex: 'unitId', key: 'unitId' },
-    { title: 'Type', dataIndex: 'type', key: 'type' },
+    {
+      title: 'Unit', dataIndex: 'unitId', key: 'unitId',
+      render: (unitId: string) => units.find(u => u.id === unitId)?.identifier ?? unitId,
+    },
+    { title: 'Type', dataIndex: 'type', key: 'type', render: (t: string) => t.replace(/_/g, ' ') },
     { title: 'Consumption', key: 'consumption', render: (_: unknown, r: MeterReading) => `${r.consumption} ${r.unit}` },
-    { title: 'Period Start', dataIndex: 'billingPeriodStart', key: 'start', render: (d: string) => dayjs(d).format('MMM YYYY') },
-    { title: 'Period End', dataIndex: 'billingPeriodEnd', key: 'end', render: (d: string) => dayjs(d).format('MMM YYYY') },
+    { title: 'Period', key: 'period', render: (_: unknown, r: MeterReading) => dayjs(r.billingPeriodStart).format('MMM YYYY') },
   ];
 
   return (

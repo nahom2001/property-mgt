@@ -13,14 +13,14 @@ import {
 
 // ── Seed data ────────────────────────────────────────────────────────────────
 
-const ADMIN_USER = { id: 'user-admin-1', fullName: 'Abebe Girma', email: 'admin@phison.local', phone: '+251 91 100 0001', role: UserRole.Admin, status: 'active', preferredLanguage: 'en', createdAt: '2026-01-01T08:00:00Z', updatedAt: '2026-01-01T08:00:00Z' };
-const STAFF_USER = { id: 'user-staff-1', fullName: 'Tigist Haile', email: 'staff@phison.local', phone: '+251 91 100 0002', role: UserRole.Staff, status: 'active', preferredLanguage: 'am', createdAt: '2026-01-15T08:00:00Z', updatedAt: '2026-01-15T08:00:00Z' };
-const RESIDENT_USER = { id: 'user-resident-1', fullName: 'Dawit Bekele', email: 'resident@phison.local', phone: '+251 91 234 5678', role: UserRole.Resident, status: 'active', preferredLanguage: 'en', createdAt: '2026-02-01T08:00:00Z', updatedAt: '2026-02-01T08:00:00Z' };
+const ADMIN_USER = { id: 'user-admin-1', fullName: 'Abebe Girma', email: 'admin@phison.local', phone: '+251 91 100 0001', role: UserRole.Admin, status: 'active', preferredLanguage: 'en', hasVehicle: null as boolean | null, vehicleNumber: null as string | null, createdAt: '2026-01-01T08:00:00Z', updatedAt: '2026-01-01T08:00:00Z' };
+const STAFF_USER = { id: 'user-staff-1', fullName: 'Tigist Haile', email: 'staff@phison.local', phone: '+251 91 100 0002', role: UserRole.Staff, status: 'active', preferredLanguage: 'am', hasVehicle: null, vehicleNumber: null, createdAt: '2026-01-15T08:00:00Z', updatedAt: '2026-01-15T08:00:00Z' };
+const RESIDENT_USER = { id: 'user-resident-1', fullName: 'Dawit Bekele', email: 'resident@phison.local', phone: '+251 91 234 5678', role: UserRole.Resident, status: 'active', preferredLanguage: 'en', hasVehicle: true, vehicleNumber: 'AA-12345', createdAt: '2026-02-01T08:00:00Z', updatedAt: '2026-02-01T08:00:00Z' };
 
 const USERS: typeof ADMIN_USER[] = [
   ADMIN_USER, STAFF_USER, RESIDENT_USER,
-  { id: 'user-resident-2', fullName: 'Hiwot Tadesse', email: 'hiwot@phison.local', phone: '+251 91 234 5679', role: UserRole.Resident, status: 'active', preferredLanguage: 'am', createdAt: '2026-02-10T08:00:00Z', updatedAt: '2026-02-10T08:00:00Z' },
-  { id: 'user-resident-3', fullName: 'Yonas Mekonnen', email: 'yonas@phison.local', phone: '+251 91 234 5680', role: UserRole.Resident, status: 'suspended', preferredLanguage: 'en', createdAt: '2026-03-01T08:00:00Z', updatedAt: '2026-03-01T08:00:00Z' },
+  { id: 'user-resident-2', fullName: 'Hiwot Tadesse', email: 'hiwot@phison.local', phone: '+251 91 234 5679', role: UserRole.Resident, status: 'active', preferredLanguage: 'am', hasVehicle: false, vehicleNumber: null, createdAt: '2026-02-10T08:00:00Z', updatedAt: '2026-02-10T08:00:00Z' },
+  { id: 'user-resident-3', fullName: 'Yonas Mekonnen', email: 'yonas@phison.local', phone: '+251 91 234 5680', role: UserRole.Resident, status: 'suspended', preferredLanguage: 'en', hasVehicle: false, vehicleNumber: null, createdAt: '2026-03-01T08:00:00Z', updatedAt: '2026-03-01T08:00:00Z' },
 ];
 
 const UNITS = [
@@ -31,10 +31,34 @@ const UNITS = [
   { id: 'unit-5', identifier: 'Shop G1', type: 'other', area: 45.0, floor: 'G', notes: 'Ground floor commercial', status: 'active', blockId: null, createdAt: '2026-01-01T08:00:00Z', updatedAt: '2026-01-01T08:00:00Z' },
 ];
 
-const PROVIDER_PAYMENTS = [
-  { id: 'pp-1', type: PaymentType.ElectricityFee, provider: 'EEU', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', amount: 1250000, currency: 'ETB', paidOn: '2026-10-05T08:00:00Z', reference: 'EEU-SEP-2026', recordedBy: 'user-admin-1', status: 'allocated', createdAt: '2026-10-05T08:00:00Z' },
-  { id: 'pp-2', type: PaymentType.WaterPayment, provider: 'AAWSA', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', amount: 480000, currency: 'ETB', paidOn: '2026-10-06T08:00:00Z', reference: 'AAWSA-SEP-2026', recordedBy: 'user-admin-1', status: 'allocated', createdAt: '2026-10-06T08:00:00Z' },
-  { id: 'pp-3', type: PaymentType.ServiceFee, provider: 'Phison Services', billingPeriodStart: '2026-10-01T00:00:00Z', billingPeriodEnd: '2026-10-31T00:00:00Z', amount: 750000, currency: 'ETB', paidOn: '2026-11-01T08:00:00Z', reference: 'SVC-OCT-2026', recordedBy: 'user-admin-1', status: 'unallocated', createdAt: '2026-11-01T08:00:00Z' },
+const PROVIDER_PAYMENTS: Array<Record<string, unknown>> = [
+  { id: 'pp-1', type: PaymentType.ElectricityFee, provider: 'EEU', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', amount: 1250000, currency: 'ETB', paidOn: '2026-10-05T08:00:00Z', reference: 'EEU-SEP-2026', recordedBy: 'user-admin-1', status: 'allocated', attachmentFilename: null, attachmentMimeType: null, attachmentData: null, createdAt: '2026-10-05T08:00:00Z' },
+  { id: 'pp-2', type: PaymentType.WaterPayment, provider: 'AAWSA', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', amount: 480000, currency: 'ETB', paidOn: '2026-10-06T08:00:00Z', reference: 'AAWSA-SEP-2026', recordedBy: 'user-admin-1', status: 'allocated', attachmentFilename: null, attachmentMimeType: null, attachmentData: null, createdAt: '2026-10-06T08:00:00Z' },
+  { id: 'pp-3', type: PaymentType.ServiceFee, provider: 'Phison Services', billingPeriodStart: '2026-10-01T00:00:00Z', billingPeriodEnd: '2026-10-31T00:00:00Z', amount: 750000, currency: 'ETB', paidOn: '2026-11-01T08:00:00Z', reference: 'SVC-OCT-2026', recordedBy: 'user-admin-1', status: 'unallocated', attachmentFilename: null, attachmentMimeType: null, attachmentData: null, createdAt: '2026-11-01T08:00:00Z' },
+];
+
+// ── Meter readings (consumption per unit per billing period) ──────────────────
+// Used by rate-based allocation calculation.
+
+const METER_READINGS = [
+  // Electricity — Sep 2026 billing period
+  { id: 'mr-1', unitId: 'unit-1', type: 'electricity_fee', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 450, unit: 'kWh' },
+  { id: 'mr-2', unitId: 'unit-2', type: 'electricity_fee', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 380, unit: 'kWh' },
+  { id: 'mr-3', unitId: 'unit-3', type: 'electricity_fee', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 520, unit: 'kWh' },
+  { id: 'mr-4', unitId: 'unit-5', type: 'electricity_fee', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 450, unit: 'kWh' },
+  // Water — Sep 2026 billing period
+  { id: 'mr-5', unitId: 'unit-1', type: 'water_payment', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 32, unit: 'm3' },
+  { id: 'mr-6', unitId: 'unit-2', type: 'water_payment', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 22, unit: 'm3' },
+  { id: 'mr-7', unitId: 'unit-3', type: 'water_payment', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 38, unit: 'm3' },
+  { id: 'mr-8', unitId: 'unit-5', type: 'water_payment', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', consumption: 12, unit: 'm3' },
+];
+
+// ── Resident-unit links (occupancy) ───────────────────────────────────────────
+
+const RESIDENT_LINKS = [
+  { id: 'link-1', userId: 'user-resident-1', unitId: 'unit-1', role: 'tenant', startDate: '2026-02-01T00:00:00Z', endDate: null, createdBy: 'user-admin-1', createdAt: '2026-02-01T08:00:00Z' },
+  { id: 'link-2', userId: 'user-resident-2', unitId: 'unit-2', role: 'tenant', startDate: '2026-02-10T00:00:00Z', endDate: null, createdBy: 'user-admin-1', createdAt: '2026-02-10T08:00:00Z' },
+  { id: 'link-3', userId: 'user-resident-3', unitId: 'unit-3', role: 'owner', startDate: '2026-03-01T00:00:00Z', endDate: null, createdBy: 'user-admin-1', createdAt: '2026-03-01T08:00:00Z' },
 ];
 
 const CHARGES = [
@@ -87,8 +111,8 @@ const LEDGER = [
   { id: 'pp-2', type: 'water_payment', provider: 'AAWSA', billingPeriodStart: '2026-09-01T00:00:00Z', billingPeriodEnd: '2026-09-30T00:00:00Z', amount: 480000, recovered: 480000, outstanding: 0, status: 'allocated', currency: 'ETB' },
 ];
 
-const PENDING_PAYMENTS = [
-  { id: 'rp-pending-1', chargeId: 'charge-2', amount: 137500, transactionFee: 2750, method: 'online', status: 'pending_confirmation', paidOn: '2026-11-05T14:30:00Z', reference: 'CBE-ONLINE-9921', recordedBy: 'user-resident-2' },
+const PENDING_PAYMENTS: Array<Record<string, unknown>> = [
+  { id: 'rp-pending-1', chargeId: 'charge-2', amount: 137500, transactionFee: 2750, method: 'online', status: 'pending_confirmation', paidOn: '2026-11-05T14:30:00Z', reference: 'CBE-ONLINE-9921', recordedBy: 'user-resident-2', attachmentFilename: 'payment-proof.jpg', attachmentMimeType: 'image/jpeg', attachmentData: null },
 ];
 
 const LATE_FEE_CONFIGS = [
@@ -96,6 +120,156 @@ const LATE_FEE_CONFIGS = [
   { id: 'lfc-2', paymentType: 'electricity_fee', amount: 30000, currency: 'ETB', updatedAt: '2026-01-01T00:00:00Z' },
   { id: 'lfc-3', paymentType: 'water_payment', amount: 15000, currency: 'ETB', updatedAt: '2026-01-01T00:00:00Z' },
 ];
+
+// ── Tariff seed data ──────────────────────────────────────────────────────────
+
+// Service fee (ETB, not santim)
+let SERVICE_FEE: { id: string; withVehicleAmount: number; withoutVehicleAmount: number; effectiveFrom: string; updatedBy: string | null; updatedAt: string } = { id: 'sf-1', withVehicleAmount: 3000, withoutVehicleAmount: 2500, effectiveFrom: '2024-07-01T00:00:00Z', updatedBy: null, updatedAt: '2024-07-01T00:00:00Z' };
+
+// Electricity tariff periods and rates (ETB per kWh)
+// Source: §11.3 of brief. All 7 residential tiers + 1 commercial flat.
+const ELEC_TIER_LABELS = [
+  { tier: 1, fromKwh: 0,   toKwh: 50,  label: '0–50 kWh' },
+  { tier: 2, fromKwh: 51,  toKwh: 100, label: '51–100 kWh' },
+  { tier: 3, fromKwh: 101, toKwh: 200, label: '101–200 kWh' },
+  { tier: 4, fromKwh: 201, toKwh: 300, label: '201–300 kWh' },
+  { tier: 5, fromKwh: 301, toKwh: 400, label: '301–400 kWh' },
+  { tier: 6, fromKwh: 401, toKwh: 500, label: '401–500 kWh' },
+  { tier: 7, fromKwh: 501, toKwh: null, label: '>500 kWh' },
+];
+
+// [period label, [t1,t2,t3,t4,t5,t6,t7, commercial]]
+const ELEC_RATE_DATA: Array<[string, number[]]> = [
+  ['Pre-2024/25', [0.27, 0.77, 1.63, 2.00, 2.20, 2.41, 2.48, 2.12]],
+  ['2024/25 Q1',  [0.35, 0.95, 1.89, 2.46, 2.66, 2.85, 2.92, 2.61]],
+  ['2024/25 Q2',  [0.43, 1.13, 2.15, 2.92, 3.12, 3.29, 3.35, 3.09]],
+  ['2024/25 Q3',  [0.52, 1.31, 2.41, 3.38, 3.57, 3.73, 3.79, 3.57]],
+  ['2024/25 Q4',  [0.60, 1.49, 2.67, 3.84, 4.03, 4.17, 4.23, 4.05]],
+  ['2025/26 Q1',  [0.68, 1.67, 2.93, 4.30, 4.49, 4.62, 4.66, 4.53]],
+  ['2025/26 Q2',  [0.76, 1.85, 3.19, 4.76, 4.95, 5.06, 5.10, 5.01]],
+  ['2025/26 Q3',  [0.84, 2.03, 3.45, 5.22, 5.41, 5.50, 5.54, 5.50]],
+  ['2025/26 Q4',  [0.92, 2.21, 3.72, 5.68, 5.86, 5.94, 5.97, 5.98]],
+  ['2026/27 Q1',  [1.00, 2.39, 3.98, 6.14, 6.32, 6.39, 6.41, 6.46]],
+  ['2026/27 Q2',  [1.08, 2.57, 4.24, 6.60, 6.78, 6.83, 6.84, 6.94]],
+  ['2026/27 Q3',  [1.16, 2.76, 4.50, 7.06, 7.24, 7.27, 7.28, 7.42]],
+  ['2026/27 Q4',  [1.24, 2.94, 4.76, 7.52, 7.70, 7.71, 7.72, 7.90]],
+  ['2027/28 Q1',  [1.32, 3.12, 5.02, 7.98, 8.15, 8.16, 8.15, 8.39]],
+  ['2027/28 Q2',  [1.40, 3.30, 5.28, 8.44, 8.61, 8.60, 8.59, 8.87]],
+  ['2027/28 Q3',  [1.48, 3.48, 5.55, 8.89, 9.07, 9.04, 9.03, 9.35]],
+  ['2027/28 Q4',  [1.56, 3.66, 5.81, 9.35, 9.53, 9.48, 9.46, 9.83]],
+];
+
+// Build a flat list of electricity rates
+const ELECTRICITY_RATES: Array<{
+  id: string; periodId: string; periodLabel: string; category: string;
+  tier: number; fromKwh: number; toKwh: number | null; ratePerKwh: number;
+  updatedBy: string | null; updatedAt: string;
+}> = [];
+
+ELEC_RATE_DATA.forEach(([label, rates], pi) => {
+  const periodId = `ep-${pi}`;
+  ELEC_TIER_LABELS.forEach(({ tier, fromKwh, toKwh }, ti) => {
+    ELECTRICITY_RATES.push({
+      id: `er-${pi}-${ti}`,
+      periodId,
+      periodLabel: label,
+      category: 'residential',
+      tier,
+      fromKwh,
+      toKwh,
+      ratePerKwh: rates[ti],
+      updatedBy: null,
+      updatedAt: '2024-07-01T00:00:00Z',
+    });
+  });
+  // commercial flat rate (tier 8)
+  ELECTRICITY_RATES.push({
+    id: `er-${pi}-7`,
+    periodId,
+    periodLabel: label,
+    category: 'commercial',
+    tier: 1,
+    fromKwh: 0,
+    toKwh: null,
+    ratePerKwh: rates[7],
+    updatedBy: null,
+    updatedAt: '2024-07-01T00:00:00Z',
+  });
+});
+
+// Water tariff — Birr per m³ (§11.4 of brief)
+const WATER_TIER_LABELS = [
+  { tier: 1, fromM3: 1,  toM3: 5,    label: '1–5 m³' },
+  { tier: 2, fromM3: 6,  toM3: 14,   label: '6–14 m³' },
+  { tier: 3, fromM3: 15, toM3: 23,   label: '15–23 m³' },
+  { tier: 4, fromM3: 24, toM3: 41,   label: '24–41 m³' },
+  { tier: 5, fromM3: 42, toM3: 50,   label: '42–50 m³' },
+  { tier: 6, fromM3: 51, toM3: null, label: '51+ m³' },
+];
+
+const WATER_RATE_DATA: Array<[string, number[]]> = [
+  ['2018', [13.92, 24.37, 45.25, 69.62, 83.54, 111.39]],
+  ['2019', [17.18, 30.06, 55.82, 85.88, 103.05, 137.04]],
+];
+
+const WATER_RATES: Array<{
+  id: string; periodId: string; periodLabel: string;
+  tier: number; fromM3: number; toM3: number | null; ratePerM3: number;
+  updatedBy: string | null; updatedAt: string;
+}> = [];
+
+WATER_RATE_DATA.forEach(([label, rates], pi) => {
+  const periodId = `wp-${pi}`;
+  WATER_TIER_LABELS.forEach(({ tier, fromM3, toM3 }, ti) => {
+    WATER_RATES.push({
+      id: `wr-${pi}-${ti}`,
+      periodId,
+      periodLabel: label,
+      tier,
+      fromM3,
+      toM3,
+      ratePerM3: rates[ti],
+      updatedBy: null,
+      updatedAt: '2024-07-01T00:00:00Z',
+    });
+  });
+});
+
+// ── Current-period detection ──────────────────────────────────────────────────
+// Ethiopian fiscal year starts July 8. Quarters:
+//   Q1: Jul 8 – Oct 7,  Q2: Oct 8 – Jan 7,  Q3: Jan 8 – Apr 7,  Q4: Apr 8 – Jul 7
+// Ethiopian calendar New Year (for water tariff years) is Sept 11.
+
+function getCurrentElecPeriodLabel(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1; // 1-indexed
+  const d = now.getDate();
+  const isAfterFyStart = m > 7 || (m === 7 && d >= 8);
+  const fyStart = isAfterFyStart ? y : y - 1;
+  const fyLabel = `${fyStart}/${String(fyStart + 1).slice(-2)}`;
+
+  let quarter: number;
+  if (isAfterFyStart) {
+    quarter = (m <= 9 || (m === 10 && d <= 7)) ? 1 : 2;
+  } else {
+    quarter = (m === 1 && d <= 7) ? 2
+      : ((m === 1 && d >= 8) || m <= 3 || (m === 4 && d <= 7)) ? 3
+      : 4;
+  }
+  return `${fyLabel} Q${quarter}`;
+}
+
+function getCurrentWaterPeriodLabel(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const isAfterNewYear = m > 9 || (m === 9 && d >= 11);
+  return String(isAfterNewYear ? y - 7 : y - 8);
+}
+
+// ── Rate-based allocation helpers ─────────────────────────────────────────────
 
 // ── Router ────────────────────────────────────────────────────────────────────
 
@@ -152,6 +326,8 @@ on('POST', /\/residents$/, (_url, body) => {
     role: UserRole.Resident,
     status: (b.status as string) ?? 'active',
     preferredLanguage: (b.preferredLanguage as string) ?? 'en',
+    hasVehicle: b.hasVehicle ?? false,
+    vehicleNumber: b.vehicleNumber ?? null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -170,12 +346,7 @@ on('GET', /\/units\/links\/search/, (url) => {
   const params = new URLSearchParams(url.split('?')[1] ?? '');
   const userId = params.get('userId');
   const unitId = params.get('unitId');
-  const LINKS = [
-    { id: 'link-1', userId: 'user-resident-1', unitId: 'unit-1', role: 'tenant', startDate: '2026-02-01T00:00:00Z', endDate: null, createdBy: 'user-admin-1', createdAt: '2026-02-01T08:00:00Z' },
-    { id: 'link-2', userId: 'user-resident-2', unitId: 'unit-2', role: 'tenant', startDate: '2026-02-10T00:00:00Z', endDate: null, createdBy: 'user-admin-1', createdAt: '2026-02-10T08:00:00Z' },
-    { id: 'link-3', userId: 'user-resident-3', unitId: 'unit-3', role: 'owner', startDate: '2026-03-01T00:00:00Z', endDate: null, createdBy: 'user-admin-1', createdAt: '2026-03-01T08:00:00Z' },
-  ];
-  let results = LINKS;
+  let results = RESIDENT_LINKS;
   if (userId) results = results.filter(l => l.userId === userId);
   if (unitId) results = results.filter(l => l.unitId === unitId);
   return ok(results);
@@ -190,26 +361,161 @@ on('PATCH', /\/units\/links\/[\w-]+\/close/, () => noContent());
 
 // Provider payments
 on('GET', /\/payments\/provider/, () => ok(PROVIDER_PAYMENTS));
-on('POST', /\/payments\/provider/, (_url, body) => { const p = { id: `pp-${Date.now()}`, ...(body as object), status: 'unallocated', createdAt: new Date().toISOString() }; PROVIDER_PAYMENTS.push(p as typeof PROVIDER_PAYMENTS[0]); return ok(p); });
+on('POST', /\/payments\/provider/, (_url, body) => {
+  const b = body as Record<string, unknown>;
+  const p = {
+    id: `pp-${Date.now()}`,
+    type: b.type,
+    provider: b.provider,
+    billingPeriodStart: b.billingPeriodStart,
+    billingPeriodEnd: b.billingPeriodEnd,
+    amount: b.amount,
+    currency: 'ETB',
+    paidOn: b.paidOn,
+    reference: b.reference,
+    recordedBy: 'user-admin-1',
+    status: 'unallocated',
+    attachmentFilename: b.attachmentFilename ?? null,
+    attachmentMimeType: b.attachmentMimeType ?? null,
+    attachmentData: b.attachmentData ?? null,
+    createdAt: new Date().toISOString(),
+  };
+  PROVIDER_PAYMENTS.push(p);
+  return ok(p);
+});
 
 // Meter readings
-on('GET', /\/payments\/meter-readings/, () => ok([]));
+on('GET', /\/payments\/meter-readings/, (url) => {
+  const params = new URLSearchParams(url.split('?')[1] ?? '');
+  const unitId = params.get('unitId');
+  let results = METER_READINGS;
+  if (unitId) results = results.filter(r => r.unitId === unitId);
+  return ok(results);
+});
+on('POST', /\/payments\/meter-readings/, (_url, body) => {
+  const b = body as Record<string, unknown>;
+  const reading = {
+    id: `mr-${Date.now()}`,
+    unitId: b.unitId as string,
+    type: b.type as string,
+    billingPeriodStart: b.billingPeriodStart as string,
+    billingPeriodEnd: b.billingPeriodEnd as string,
+    consumption: b.consumption as number,
+    unit: (b.type === 'electricity_fee' ? 'kWh' : 'm3'),
+  };
+  METER_READINGS.push(reading);
+  return ok(reading);
+});
 on('POST', /\/payments\/meter-readings/, (_url, body) => ok({ id: `mr-${Date.now()}`, ...(body as object) }));
 
-// Allocation
+// Allocation — rate-based calculation using the current quarter's rates
 on('POST', /\/payments\/allocations\/compute\/[\w-]+$/, (url) => {
   const ppId = url.split('/').pop()!;
   const pp = PROVIDER_PAYMENTS.find(p => p.id === ppId);
+  if (!pp) return err(404, 'Provider payment not found');
+
   const activeUnits = UNITS.filter(u => u.status === 'active');
-  const share = Math.floor((pp?.amount ?? 750000) / activeUnits.length);
+  const ppType = pp.type as string;
+  const lines: Array<Record<string, unknown>> = [];
+  const unlinkedUnits: string[] = [];
+  let totalComputed = 0;
+
+  // Helper: find the active resident link for a unit (tenant preferred over owner)
+  const getLinkForUnit = (unitId: string) => {
+    const links = RESIDENT_LINKS.filter(l => l.unitId === unitId && l.endDate === null);
+    const tenantLinks = links.filter(l => l.role === 'tenant');
+    return tenantLinks.length > 0 ? tenantLinks[0] : links.find(l => l.role === 'owner');
+  };
+
+  // Helper: match meter readings by unit + type + billing period month
+  const findReading = (unitId: string, type: string) => {
+    const ppStart = new Date(pp.billingPeriodStart as string);
+    return METER_READINGS.find(r => {
+      if (r.unitId !== unitId || r.type !== type) return false;
+      const rStart = new Date(r.billingPeriodStart);
+      return rStart.getFullYear() === ppStart.getFullYear() && rStart.getMonth() === ppStart.getMonth();
+    });
+  };
+
+  if (ppType === 'electricity_fee') {
+    // Current quarter's commercial flat rate
+    const currentLabel = getCurrentElecPeriodLabel();
+    const commercialRate = ELECTRICITY_RATES.find(r => r.category === 'commercial' && r.periodLabel === currentLabel);
+    const ratePerKwh = commercialRate?.ratePerKwh ?? 0;
+
+    for (const unit of activeUnits) {
+      const link = getLinkForUnit(unit.id);
+      if (!link) { unlinkedUnits.push(unit.identifier); continue; }
+
+      const reading = findReading(unit.id, 'electricity_fee');
+      const consumption = reading?.consumption ?? 0;
+      const chargeSantim = Math.round(consumption * ratePerKwh * 100);
+      totalComputed += chargeSantim;
+
+      const user = USERS.find(u => u.id === link.userId);
+      lines.push({
+        unitId: unit.id, unitIdentifier: unit.identifier, shareAmount: chargeSantim,
+        payerId: link.userId, payerName: user?.fullName ?? null, payerRole: link.role, hasReading: !!reading,
+      });
+    }
+  } else if (ppType === 'water_payment') {
+    // Current water period rates — simple rate × consumption (not block tariff)
+    const currentLabel = getCurrentWaterPeriodLabel();
+    const waterRates = WATER_RATES.filter(r => r.periodLabel === currentLabel);
+
+    for (const unit of activeUnits) {
+      const link = getLinkForUnit(unit.id);
+      if (!link) { unlinkedUnits.push(unit.identifier); continue; }
+
+      const reading = findReading(unit.id, 'water_payment');
+      const consumption = reading?.consumption ?? 0;
+
+      // Find the tier matching this consumption level and multiply rate × consumption
+      const tier = waterRates.find(r =>
+        r.toM3 === null ? consumption >= r.fromM3
+          : consumption >= r.fromM3 && consumption <= r.toM3
+      );
+      const ratePerM3 = tier?.ratePerM3 ?? 0;
+      const chargeSantim = Math.round(consumption * ratePerM3 * 100);
+      totalComputed += chargeSantim;
+
+      const user = USERS.find(u => u.id === link.userId);
+      lines.push({
+        unitId: unit.id, unitIdentifier: unit.identifier, shareAmount: chargeSantim,
+        payerId: link.userId, payerName: user?.fullName ?? null, payerRole: link.role, hasReading: !!reading,
+      });
+    }
+  } else {
+    // Service fee — flat rate per resident based on vehicle status
+    const withVehicleSantim = SERVICE_FEE.withVehicleAmount * 100;
+    const withoutVehicleSantim = SERVICE_FEE.withoutVehicleAmount * 100;
+
+    for (const unit of activeUnits) {
+      const link = getLinkForUnit(unit.id);
+      if (!link) { unlinkedUnits.push(unit.identifier); continue; }
+
+      const user = USERS.find(u => u.id === link.userId);
+      const chargeSantim = user?.hasVehicle ? withVehicleSantim : withoutVehicleSantim;
+      totalComputed += chargeSantim;
+
+      lines.push({
+        unitId: unit.id, unitIdentifier: unit.identifier, shareAmount: chargeSantim,
+        payerId: link.userId, payerName: user?.fullName ?? null, payerRole: link.role, hasReading: true,
+      });
+    }
+  }
+
+  const ppAmount = pp.amount as number;
+  const difference = totalComputed - ppAmount;
+
   return ok({
     allocationId: `alloc-draft-${ppId}`,
-    lines: activeUnits.map((u, i) => ({ unitId: u.id, unitIdentifier: u.identifier, shareAmount: share, payerId: USERS[i % 3 + 2]?.id ?? null, payerName: USERS[i % 3 + 2]?.fullName ?? null, payerRole: 'tenant', hasReading: true })),
-    totalComputed: pp?.amount ?? 750000,
-    providerPaymentAmount: pp?.amount ?? 750000,
-    difference: 0,
-    valid: true,
-    unlinkedUnits: [],
+    lines,
+    totalComputed,
+    providerPaymentAmount: ppAmount,
+    difference,
+    valid: difference === 0,
+    unlinkedUnits,
   });
 });
 on('POST', /\/payments\/allocations\/confirm/, () => ok({ id: `alloc-${Date.now()}`, status: 'confirmed' }));
@@ -234,12 +540,71 @@ on('POST', /\/payments\/resident\/online\/[\w-]+$/, (_url, body) => {
   return ok(payment);
 });
 on('GET', /\/payments\/resident\/pending/, () => ok(PENDING_PAYMENTS));
+on('POST', /\/payments\/resident\/pending$/, (_url, body) => {
+  const b = body as Record<string, unknown>;
+  const payment = {
+    id: `rp-pending-${Date.now()}`,
+    chargeId: b.chargeId,
+    amount: b.amount,
+    transactionFee: b.transactionFee ?? 0,
+    method: b.method ?? 'cash',
+    status: 'pending_confirmation',
+    paidOn: b.paidOn,
+    reference: b.reference,
+    recordedBy: 'user-admin-1',
+    attachmentFilename: b.attachmentFilename ?? null,
+    attachmentMimeType: b.attachmentMimeType ?? null,
+    attachmentData: b.attachmentData ?? null,
+  };
+  PENDING_PAYMENTS.push(payment);
+  return ok(payment);
+});
 on('PATCH', /\/payments\/resident\/[\w-]+\/confirm/, (_url, body) => ok({ status: (body as { approved: boolean }).approved ? 'confirmed' : 'rejected' }));
 
 // Ledger & config
 on('GET', /\/payments\/ledger/, () => ok(LEDGER));
 on('GET', /\/payments\/late-fee-config/, () => ok(LATE_FEE_CONFIGS));
 on('POST', /\/payments\/late-fee-config/, (_url, body) => ok({ id: `lfc-${Date.now()}`, ...(body as object) }));
+
+// ── Tariff pricing ────────────────────────────────────────────────────────────
+
+// Service fee
+on('GET', /\/pricing\/service-fee$/, () => ok(SERVICE_FEE));
+on('PUT', /\/pricing\/service-fee$/, (_url, body) => {
+  const b = body as { withVehicleAmount: number; withoutVehicleAmount: number };
+  SERVICE_FEE = { ...SERVICE_FEE, ...b, updatedAt: new Date().toISOString(), updatedBy: 'user-admin-1' };
+  return ok(SERVICE_FEE);
+});
+
+// Electricity rates — GET all, PUT a single rate
+on('GET', /\/pricing\/electricity$/, () => ok(ELECTRICITY_RATES));
+on('PUT', /\/pricing\/electricity\/[\w-]+$/, (url, body) => {
+  const id = url.split('/').pop()!;
+  const b = body as { ratePerKwh: number };
+  const idx = ELECTRICITY_RATES.findIndex(r => r.id === id);
+  if (idx >= 0) {
+    ELECTRICITY_RATES[idx] = { ...ELECTRICITY_RATES[idx], ratePerKwh: b.ratePerKwh, updatedAt: new Date().toISOString(), updatedBy: 'user-admin-1' };
+  }
+  return ok(ELECTRICITY_RATES[idx] ?? {});
+});
+
+// Water rates — GET all, PUT a single rate
+on('GET', /\/pricing\/water$/, () => ok(WATER_RATES));
+on('PUT', /\/pricing\/water\/[\w-]+$/, (url, body) => {
+  const id = url.split('/').pop()!;
+  const b = body as { ratePerM3: number };
+  const idx = WATER_RATES.findIndex(r => r.id === id);
+  if (idx >= 0) {
+    WATER_RATES[idx] = { ...WATER_RATES[idx], ratePerM3: b.ratePerM3, updatedAt: new Date().toISOString(), updatedBy: 'user-admin-1' };
+  }
+  return ok(WATER_RATES[idx] ?? {});
+});
+
+// Current tariff period — determined dynamically from today's date
+on('GET', /\/pricing\/current-period$/, () => ok({
+  electricityPeriodLabel: getCurrentElecPeriodLabel(),
+  waterPeriodLabel: getCurrentWaterPeriodLabel(),
+}));
 
 // Vouchers
 on('GET', /\/vouchers\/my/, () => ok(VOUCHERS.filter(v => v.payerId === 'user-resident-1')));

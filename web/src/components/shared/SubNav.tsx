@@ -54,11 +54,12 @@ export function SubNav({ items }: SubNavProps) {
 // ── Pre-built sub-navs ────────────────────────────────────────────────────────
 
 export const PAYMENTS_NAV: SubNavItem[] = [
-  { key: '/admin/payments/provider', label: 'Provider Payments' },
+  { key: '/admin/payments/provider',  label: 'Provider Payments' },
   { key: '/admin/payments/meter-readings', label: 'Meter Readings' },
-  { key: '/admin/payments/charges', label: 'Charges' },
-  { key: '/admin/payments/pending', label: 'Pending Confirmations' },
-  { key: '/admin/payments/ledger', label: 'Recovery Ledger' },
+  { key: '/admin/payments/charges',   label: 'Charges' },
+  { key: '/admin/payments/pending',   label: 'Pending Confirmations' },
+  { key: '/admin/payments/ledger',    label: 'Recovery Ledger' },
+  { key: '/admin/payments/pricing',   label: 'Payment Pricing' },
 ];
 
 export function PaymentsSubNav() {
