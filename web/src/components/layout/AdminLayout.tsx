@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { key: '/admin/payments', icon: <DollarOutlined />, label: 'Payments' },
   { key: '/admin/vouchers', icon: <FileTextOutlined />, label: 'Vouchers' },
   { key: '/admin/notices', icon: <NotificationOutlined />, label: 'Notices' },
-  { key: '/admin/requests', icon: <CustomerServiceOutlined />, label: 'Requests' },
+  { key: '/admin/requests', icon: <CustomerServiceOutlined />, label: 'Requests' }
   // { key: '/admin/settings', icon: <WarningOutlined />, label: 'Penalty settings' },
 ];
 
