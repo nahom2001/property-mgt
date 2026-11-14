@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import {
   DashboardOutlined, TeamOutlined, HomeOutlined, DollarOutlined, FileTextOutlined,
-  NotificationOutlined, CustomerServiceOutlined, FieldTimeOutlined, LogoutOutlined,
+  NotificationOutlined, CustomerServiceOutlined, WarningOutlined, LogoutOutlined,
   BellOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/auth';
@@ -21,7 +21,7 @@ const NAV_ITEMS = [
   { key: '/admin/vouchers', icon: <FileTextOutlined />, label: 'Vouchers' },
   { key: '/admin/notices', icon: <NotificationOutlined />, label: 'Notices' },
   { key: '/admin/requests', icon: <CustomerServiceOutlined />, label: 'Requests' },
-  { key: '/admin/settings', icon: <FieldTimeOutlined />, label: 'Penalty setting' },
+  { key: '/admin/settings', icon: <WarningOutlined />, label: 'Penalty settings' },
 ];
 
 export function AdminLayout() {
