@@ -86,7 +86,6 @@ export function AppRouter() {
             <Route path="vouchers" element={<VouchersAdminPage />} />
             <Route path="notices" element={<NoticesAdminPage />} />
             <Route path="requests" element={<RequestsAdminPage />} />
-            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* ── Resident portal ──────────────────────────────────────── */}

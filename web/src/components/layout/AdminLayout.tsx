@@ -4,7 +4,7 @@ import {
 } from 'antd';
 import {
   DashboardOutlined, TeamOutlined, HomeOutlined, DollarOutlined, FileTextOutlined,
-  NotificationOutlined, CustomerServiceOutlined, WarningOutlined, LogoutOutlined,
+  NotificationOutlined, CustomerServiceOutlined, LogoutOutlined,
   BellOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/auth';
