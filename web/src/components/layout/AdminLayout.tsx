@@ -21,7 +21,7 @@ const NAV_ITEMS = [
   { key: '/admin/vouchers', icon: <FileTextOutlined />, label: 'Vouchers' },
   { key: '/admin/notices', icon: <NotificationOutlined />, label: 'Notices' },
   { key: '/admin/requests', icon: <CustomerServiceOutlined />, label: 'Requests' },
-  { key: '/admin/settings', icon: <WarningOutlined />, label: 'Penalty settings' },
+  // { key: '/admin/settings', icon: <WarningOutlined />, label: 'Penalty settings' },
 ];
 
 export function AdminLayout() {
