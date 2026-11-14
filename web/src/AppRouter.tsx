@@ -23,7 +23,7 @@ const VouchersAdminPage    = lazy(() => import('./pages/admin/VouchersAdminPage'
 const NoticesAdminPage     = lazy(() => import('./pages/admin/NoticesAdminPage'));
 const RequestsAdminPage    = lazy(() => import('./pages/admin/RequestsAdminPage'));
 const PaymentPricingPage  = lazy(() => import('./pages/admin/PaymentPricingPage'));
-const SettingsPage         = lazy(() => import('./pages/admin/SettingsPage'));
+// const SettingsPage         = lazy(() => import('./pages/admin/SettingsPage'));
 
 // ── Resident portal pages ─────────────────────────────────────────────────────
 const ResidentDashboard     = lazy(() => import('./pages/resident/ResidentDashboard'));
