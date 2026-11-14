@@ -5,6 +5,7 @@ import { useAuthStore } from './store/auth';
 import { AdminLayout } from './components/layout/AdminLayout';
 import { ResidentLayout } from './components/layout/ResidentLayout';
 
+//comment
 // ── Auth ──────────────────────────────────────────────────────────────────────
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 
@@ -86,6 +87,7 @@ export function AppRouter() {
             <Route path="vouchers" element={<VouchersAdminPage />} />
             <Route path="notices" element={<NoticesAdminPage />} />
             <Route path="requests" element={<RequestsAdminPage />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* ── Resident portal ──────────────────────────────────────── */}
