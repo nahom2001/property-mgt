@@ -73,6 +73,7 @@ export function AppRouter() {
             <Route path="units" element={<UnitsPage />} />
 
             {/* Payments */}
+            <Route path="payments" element={<Navigate to="/admin/payments/provider" replace />} />
             <Route path="payments/provider" element={<ProviderPaymentsPage />} />
             <Route path="payments/meter-readings" element={<MeterReadingsPage />} />
             <Route path="payments/allocation/:paymentId" element={<AllocationPage />} />
