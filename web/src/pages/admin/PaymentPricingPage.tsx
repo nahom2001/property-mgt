@@ -3,8 +3,9 @@
  *
  * Three tabs matching the brief §7.3:
  *   Electricity  — 17 periods × 7 residential tiers + 1 commercial flat rate.
- *                  Edit any cell inline; save per row.
+ *                  Edit any cell inline; save per row. "+" adds a new period.
  *   Water        — 2 year-based periods × 6 consumption tiers. Same inline edit.
+ *                  "+" adds a new period (a new column with all 6 tier rates).
  *   Service Fee  — Flat amounts (with vehicle / without vehicle).
  *                  Admin-only edit (read-only for staff).
  *
@@ -13,16 +14,19 @@
  *   - Editing a past period shows a warning (issued charges are NOT recalculated).
  *   - Every save is logged (mock: timestamp + updatedBy field on the record).
  *   - Rates are NEVER read from constants in this file; they come from the API.
+ *   - New period labels must be unique within their tab.
+ *   - Adding a period is admin-only (same as editing).
  */
 
 import { useState } from 'react';
 import {
-  Tabs, Table, InputNumber, Button, Space, Typography, App as AntApp,
-  Card, Form, Tooltip, Alert, Tag, Popconfirm, theme as antTheme,
+  Tabs, Table, InputNumber, Input, Button, Space, Typography, App as AntApp,
+  Card, Form, Modal, Tooltip, Alert, Tag, Popconfirm, theme as antTheme,
 } from 'antd';
 import {
-  EditOutlined, SaveOutlined, CloseOutlined, InfoCircleOutlined, LockOutlined,
-} from '@ant-design/icons';import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+  EditOutlined, SaveOutlined, CloseOutlined, InfoCircleOutlined, LockOutlined, PlusOutlined,
+} from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api, getErrorMessage } from '../../lib/api';
 import { PaymentsSubNav } from '../../components/shared/SubNav';
 import { useAuthStore } from '../../store/auth';
@@ -44,6 +48,20 @@ interface CurrentPeriodResponse {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/** Dashed "+" bar shown under a table (admin only) to add a new row. */
+function AddRowButton({ label, onClick }: { label: string; onClick: () => void }) {
+  const { token } = antTheme.useToken();
+  return (
+    <div style={{ padding: 12, borderTop: `1px solid ${token.colorBorderSecondary}` }}>
+      <Button type="dashed" block icon={<PlusOutlined />} onClick={onClick}>
+        {label}
+      </Button>
+    </div>
+  );
+}
+
+const normalizeLabel = (s: unknown) => String(s ?? '').trim().toLowerCase();
+
 // ── Electricity tab ───────────────────────────────────────────────────────────
 // All units in this real-estate are commercial, so only the flat commercial
 // rate applies. One editable rate per tariff period.
@@ -53,6 +71,8 @@ function ElectricityTab({ canEdit, currentPeriodLabel }: { canEdit: boolean; cur
   const qc = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm] = Form.useForm<{ periodLabel: string; ratePerKwh: number }>();
 
   const { data: rates = [], isLoading } = useQuery({
     queryKey: ['pricing-electricity'],
@@ -71,8 +91,25 @@ function ElectricityTab({ canEdit, currentPeriodLabel }: { canEdit: boolean; cur
     onError: (e) => message.error(getErrorMessage(e)),
   });
 
+  const addMutation = useMutation({
+    mutationFn: (v: { periodLabel: string; ratePerKwh: number }) =>
+      api.post<ElectricityTariffRate>('/pricing/electricity', {
+        periodLabel: v.periodLabel.trim(),
+        ratePerKwh: v.ratePerKwh,
+        category: 'commercial',
+        tier: 1,
+      }),
+    onSuccess: () => {
+      message.success('Tariff period added');
+      qc.invalidateQueries({ queryKey: ['pricing-electricity'] });
+      setAddOpen(false);
+    },
+    onError: (e) => message.error(getErrorMessage(e)),
+  });
+
   // Only the commercial flat rate (tier=1, category='commercial') per period
   const commercialRates = rates.filter(r => r.category === 'commercial');
+  const existingLabels = commercialRates.map(r => normalizeLabel(r.periodLabel));
 
   const columns = [
     {
@@ -197,7 +234,54 @@ function ElectricityTab({ canEdit, currentPeriodLabel }: { canEdit: boolean; cur
           size="small"
           rowClassName={r => r.periodLabel === currentPeriodLabel ? 'ant-table-row-selected' : ''}
         />
+        {canEdit && (
+          <AddRowButton label="Add tariff period" onClick={() => setAddOpen(true)} />
+        )}
       </Card>
+
+      <Modal
+        title="Add electricity tariff period"
+        open={addOpen}
+        okText="Add period"
+        confirmLoading={addMutation.isPending}
+        onOk={() => addForm.submit()}
+        onCancel={() => setAddOpen(false)}
+        afterClose={() => addForm.resetFields()}
+      >
+        <Form
+          form={addForm}
+          layout="vertical"
+          style={{ marginTop: 16 }}
+          onFinish={v => addMutation.mutate(v)}
+        >
+          <Form.Item
+            name="periodLabel"
+            label="Tariff period"
+            rules={[
+              { required: true, whitespace: true, message: 'Required' },
+              {
+                validator: (_, value) =>
+                  existingLabels.includes(normalizeLabel(value))
+                    ? Promise.reject('This period already exists')
+                    : Promise.resolve(),
+              },
+            ]}
+          >
+            <Input placeholder="Use the same format as the existing periods" maxLength={40} autoFocus />
+          </Form.Item>
+
+          <Form.Item
+            name="ratePerKwh"
+            label="Flat rate (ETB / kWh)"
+            rules={[
+              { required: true, message: 'Required' },
+              { type: 'number', min: 0.01, message: 'Must be greater than 0' },
+            ]}
+          >
+            <InputNumber min={0.01} precision={2} style={{ width: '100%' }} addonAfter="ETB" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Space>
   );
 }
@@ -209,6 +293,8 @@ function WaterTab({ canEdit, currentPeriodLabel }: { canEdit: boolean; currentPe
   const qc = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue]  = useState<number | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm] = Form.useForm<Record<string, unknown>>();
 
   const { data: rates = [], isLoading } = useQuery({
     queryKey: ['pricing-water'],
@@ -227,7 +313,22 @@ function WaterTab({ canEdit, currentPeriodLabel }: { canEdit: boolean; currentPe
     onError: (e) => message.error(getErrorMessage(e)),
   });
 
+  const addMutation = useMutation({
+    mutationFn: (v: { periodLabel: string; rates: { tier: number; ratePerM3: number }[] }) =>
+      api.post<WaterTariffRate[]>('/pricing/water', {
+        periodLabel: v.periodLabel.trim(),
+        rates: v.rates,
+      }),
+    onSuccess: () => {
+      message.success('Water period added');
+      qc.invalidateQueries({ queryKey: ['pricing-water'] });
+      setAddOpen(false);
+    },
+    onError: (e) => message.error(getErrorMessage(e)),
+  });
+
   const periods = [...new Set(rates.map(r => r.periodLabel))];
+  const existingLabels = periods.map(normalizeLabel);
 
   const tiers = [
     { tier: 1, label: '1–5 m³' },
@@ -317,7 +418,67 @@ function WaterTab({ canEdit, currentPeriodLabel }: { canEdit: boolean; currentPe
           pagination={false}
           size="small"
         />
+        {canEdit && (
+          <AddRowButton label="Add water tariff period" onClick={() => setAddOpen(true)} />
+        )}
       </Card>
+
+      <Modal
+        title="Add water tariff period"
+        open={addOpen}
+        okText="Add period"
+        confirmLoading={addMutation.isPending}
+        onOk={() => addForm.submit()}
+        onCancel={() => setAddOpen(false)}
+        afterClose={() => addForm.resetFields()}
+      >
+        <Form
+          form={addForm}
+          layout="vertical"
+          style={{ marginTop: 16 }}
+          onFinish={v =>
+            addMutation.mutate({
+              periodLabel: String(v.periodLabel ?? ''),
+              rates: tiers.map(t => ({ tier: t.tier, ratePerM3: v[`tier${t.tier}`] as number })),
+            })
+          }
+        >
+          <Form.Item
+            name="periodLabel"
+            label="Tariff period"
+            rules={[
+              { required: true, whitespace: true, message: 'Required' },
+              {
+                validator: (_, value) =>
+                  existingLabels.includes(normalizeLabel(value))
+                    ? Promise.reject('This period already exists')
+                    : Promise.resolve(),
+              },
+            ]}
+          >
+            <Input placeholder="Use the same format as the existing periods" maxLength={40} autoFocus />
+          </Form.Item>
+
+          <Text type="secondary" style={{ display: 'block', marginBottom: 8, fontSize: 12 }}>
+            Rate per m³ for each consumption tier (Birr)
+          </Text>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 16 }}>
+            {tiers.map(t => (
+              <Form.Item
+                key={t.tier}
+                name={`tier${t.tier}`}
+                label={t.label}
+                rules={[
+                  { required: true, message: 'Required' },
+                  { type: 'number', min: 0.01, message: 'Must be greater than 0' },
+                ]}
+              >
+                <InputNumber min={0.01} precision={2} style={{ width: '100%' }} />
+              </Form.Item>
+            ))}
+          </div>
+        </Form>
+      </Modal>
     </Space>
   );
 }
